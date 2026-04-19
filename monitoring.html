@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>SevereWX Live Monitoring</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="monitoringstyle.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">SevereWX</div>
+    <div class="links">
+        <a href="index.html">Home</a>
+        <a href="monitoring.html">Monitoring</a>
+        <a href="monitorinfo.html">Monitor Info</a>
+        <a href="kontakt.html">Kontakt</a>
+    </div>
+</nav>
+
+<div class="monitor-box">
+
+<h2>🌪️ SevereWX Monitoring</h2>
+
+<button onclick="toggleUnit()" id="unitBtn">Switch to MPH</button>
+
+<div id="list"></div>
+<div id="map"></div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+let useMph = false;
+
+// 🛑 GLOBAL COOLDOWN (F5 SCHUTZ)
+const COOLDOWN = 300000; // 5 Minuten
+
+function canRequest() {
+    const last = localStorage.getItem("lastUpdate");
+    const now = Date.now();
+
+    if (last && now - last < COOLDOWN) {
+        console.log("Blocked by cooldown");
+        return false;
+    }
+
+    localStorage.setItem("lastUpdate", now);
+    return true;
+}
+
+// 🧠 CACHE (bleibt auch nach Reload)
+function saveCache(key, data) {
+    localStorage.setItem(key, JSON.stringify({
+        data,
+        time: Date.now()
+    }));
+}
+
+function loadCache(key) {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+
+    const obj = JSON.parse(raw);
+
+    if (Date.now() - obj.time > COOLDOWN) return null;
+
+    return obj.data;
+}
+
+const locations = [
+    { name:"Iowa", lat:42.0, lon:-93.0, group:"us", status:"online" },
+    { name:"Nebraska", lat:41.5, lon:-99.8, group:"us", status:"offline" },
+    { name:"Minnesota", lat:46.0, lon:-94.0, group:"us", status:"online" },
+    { name:"North Texas", lat:32.8, lon:-96.8, group:"us", status:"online" },
+    { name:"Oklahoma", lat:35.5, lon:-97.5, group:"us", status:"online" },
+
+    { name:"Hamburg", lat:53.55, lon:9.99, group:"de", status:"online" },
+    { name:"Bayern", lat:48.14, lon:11.58, group:"de", status:"offline" },
+    { name:"NRW", lat:51.5, lon:7.5, group:"de", status:"online" }
+];
+
+function convertWind(wind) {
+    return useMph
+        ? (wind * 0.621371).toFixed(1) + " mph"
+        : wind.toFixed(1) + " km/h";
+}
+
+function toggleUnit() {
+    useMph = !useMph;
+
+    document.getElementById("unitBtn").innerText =
+        useMph ? "Switch to KMH" : "Switch to MPH";
+
+    update(true);
+}
+
+function getRisk(cape, srh) {
+    if (cape > 3000 && srh > 250) return "HIGH";
+    if (cape > 2000 && srh > 180) return "MDT";
+    if (cape > 1200) return "ENH";
+    if (cape > 600) return "SLGT";
+    return "MRGL";
+}
+
+function estimateSRH(wind, gust, cape) {
+    const shear = Math.max(0, gust - wind);
+    return Math.min(Math.max(shear * 12 + cape / 250, 0), 500);
+}
+
+async function fetchData(loc) {
+
+    const key = loc.lat + "," + loc.lon;
+
+    // 🔁 Cache check
+    const cached = loadCache(key);
+    if (cached) return cached;
+
+    // 🛑 Cooldown check
+    if (!canRequest()) return null;
+
+    try {
+        const res = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}` +
+            `&hourly=temperature_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,cape`
+        );
+
+        const data = await res.json();
+
+        saveCache(key, data);
+
+        return data;
+
+    } catch (e) {
+        return null;
+    }
+}
+
+// 🗺️ MAP
+const map = L.map('map').setView([45, 10], 4);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap, © CartoDB'
+}).addTo(map);
+
+let markers = [];
+
+async function update(force = false) {
+
+    let usHTML = "<div class='section'><div class='title'>United States</div>";
+    let deHTML = "<div class='section'><div class='title'>Deutschland</div>";
+
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    const results = await Promise.all(
+        locations.map(loc => fetchData(loc))
+    );
+
+    for (let i = 0; i < locations.length; i++) {
+
+        const loc = locations[i];
+        const data = results[i];
+
+        const temp = data?.hourly?.temperature_2m?.[0];
+        const dew = data?.hourly?.dew_point_2m?.[0];
+        const wind = data?.hourly?.wind_speed_10m?.[0];
+        const gust = data?.hourly?.wind_gusts_10m?.[0];
+        const cape = data?.hourly?.cape?.[0] ?? 0;
+
+        if (temp === undefined || wind === undefined) continue;
+
+        const srh = estimateSRH(wind, gust, cape);
+        const risk = getRisk(cape, srh);
+
+        const statusText = loc.status === "online"
+            ? "SevereWX Live Monitoring"
+            : "SevereWX OFFLINE";
+
+        const statusClass = loc.status === "online"
+            ? "status-online"
+            : "status-offline";
+
+        const card = `
+        <div class="card">
+            <div class="name">📍 ${loc.name}</div>
+
+            <div class="data">
+                🌡️ ${temp.toFixed(1)}°C | 💨 ${convertWind(wind)}
+                <span class="risk ${risk}">${risk}</span>
+            </div>
+
+            <div class="data">💧 Dew Point: ${dew}°C</div>
+            <div class="data">⚡ CAPE: ${Math.round(cape)} | 🔄 SRH: ${Math.round(srh)}</div>
+
+            <div class="${statusClass}">${statusText}</div>
+        </div>
+        `;
+
+        if (loc.group === "us") usHTML += card;
+        else deHTML += card;
+
+        let color =
+            risk === "HIGH" ? "red" :
+            risk === "MDT" ? "orange" :
+            risk === "ENH" ? "yellow" : "green";
+
+        const marker = L.circleMarker([loc.lat, loc.lon], {
+            radius: 9,
+            color: color,
+            fillOpacity: 1
+        }).addTo(map);
+
+        marker.bindPopup(`<b>${loc.name}</b><br>Risk: ${risk}`);
+
+        markers.push(marker);
+    }
+
+    usHTML += "</div>";
+    deHTML += "</div>";
+
+    document.getElementById("list").innerHTML = usHTML + deHTML;
+}
+
+// 🚀 START
+update(true);
+
+// 🔁 UPDATE INTERVAL
+setInterval(update, 300000);
+
+</script>
+
+<footer class="footer">
+    © 2026 SevereWX – All rights reserved.
+</footer>
+
+</body>
+</html>

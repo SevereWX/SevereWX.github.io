@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>SevereWX Live Monitoring</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="monitoringstyle.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+
+<style>
+.info-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.info-title {
+    text-align: center;
+    font-size: 28px;
+    color: #9db7ff;
+    margin-bottom: 10px;
+}
+
+.info-sub {
+    text-align: center;
+    color: #cfd8ff;
+    margin-bottom: 30px;
+}
+
+.info-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(120,160,255,0.15);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.info-card h3 {
+    margin: 0 0 8px 0;
+    color: #9db7ff;
+}
+
+.info-card p {
+    margin: 0;
+    color: #cfd8ff;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Farben */
+.safe { color: #2bff7a; }
+.medium { color: #ffe600; }
+.danger { color: #ff3b3b; }
+.verydanger { color: #ff4dff; }
+
+
+
+
+
+
+/* RISKS Colors */
+
+.risk {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    margin-left: 6px;
+}
+
+/* gleiche Farben wie Monitoring */
+.MRGL { background:#2bff7a33; color:#2bff7a; }
+.SLGT { background:#ffe60033; color:#ffe600; }
+.ENH  { background:#ff9d0033; color:#ff9d00; }
+.MDT  { background:#ff4d0033; color:#ff4d00; }
+.HIGH { background:#ff003333; color:#ff0033; }
+
+
+
+
+
+
+
+.divider {
+    border: none;
+    height: 1px;
+    background: rgba(157, 183, 255, 0.2);
+    margin: 18px 0;
+}
+
+
+
+
+
+.disclaimer {
+    border: 1px solid rgba(255, 165, 0, 0.25);
+    background: rgba(255, 165, 0, 0.05);
+}
+
+.disclaimer h3 {
+    color: #ffcc66;
+}
+
+
+
+.footer {
+    text-align: center;
+    color: rgba(207, 216, 255, 0.6);
+    font-size: 12px;
+    margin: 30px auto 20px auto;
+    padding: 12px;
+    max-width: 900px;
+    border-top: 1px solid rgba(120,160,255,0.15);
+}
+
+
+
+</style>
+
+
+</head>
+<body>
+    
+<nav class="navbar">
+    <div class="logo">SevereWX</div>
+    <div class="links">
+        <a href="index.html">Home</a>
+        <a href="monitoring.html">Monitoring</a>
+        <a href="monitorinfo.html">Monitor Info</a>
+        <a href="#">Über uns WIP</a>
+        <a href="kontakt.html">Kontakt</a>
+    </div>
+</nav>
+
+
+<div class="info-container">
+
+    <div class="info-title">🌪️ Wetter Parameter Erklärung</div>
+    <div class="info-sub">Wie du CAPE & SRH im SevereWX System verstehst</div>
+
+    <!-- CAPE -->
+    <div class="info-card">
+        <h3>🌡️ CAPE (Instabilität)</h3>
+        <p>CAPE zeigt, wie viel Energie für Gewitter in der Atmosphäre vorhanden ist.</p>
+
+        <p class="safe">✔ 0–500: stabile Luft, kaum Gewitter</p>
+        <p class="medium">⚠ 500–1500: einzelne Gewitter möglich</p>
+        <p class="danger">⚠ 1500–3000: starke Gewitter möglich</p>
+        <p class="verydanger">🚨 3000+: sehr starke Gewitter / Superzellen möglich</p>
+    </div>
+
+    <!-- SRH -->
+    <div class="info-card">
+        <h3>🌪️ SRH (Storm Rotation)</h3>
+        <p>SRH beschreibt, wie stark sich die Luft in der Atmosphäre dreht.</p>
+
+        <p class="safe">✔ 0–100: kaum Rotation</p>
+        <p class="medium">⚠ 100–200: organisierte Gewitter möglich</p>
+        <p class="danger">⚠ 200–300: Superzellen möglich</p>
+        <p class="verydanger">🚨 300+: erhöhtes Tornado-Risiko</p>
+    </div>
+
+    <!-- Risiko Erklärung -->
+    <div class="info-card">
+        <h3>⚠️ Wann wird es gefährlich?</h3>
+        <p>Gefährliches Wetter entsteht meist durch eine Kombination:</p>
+
+        <p>👉 hohe CAPE + hohe SRH = instabile, rotierende Gewitter</p>
+
+        <p class="danger">→ schwere Gewitter möglich</p>
+        <p class="verydanger">→ Hagel, starke Böen, Tornado-Risiko</p>
+    </div>
+
+    <br>
+    <hr class="divider">
+    <br>
+
+    <!-- RISIKOSTUFEN -->
+    <div class="info-card">
+        <h3>⚠️ SevereWX Risiko-Stufen</h3>
+        <p>Diese Stufen werden aus CAPE + SRH berechnet (wie im Monitoring System).</p>
+    </div>
+
+    <div class="info-card">
+        <h3><span class="risk MRGL">MRGL</span> Marginal Risk</h3>
+        <p><span class="risk MRGL">0–600 CAPE</span> <span class="risk MRGL">0–100 SRH</span></p>
+        <p>Sehr stabile Atmosphäre. Kaum Gewitterentwicklung.</p>
+    </div>
+
+    <div class="info-card">
+        <h3><span class="risk SLGT">SLGT</span> Slight Risk</h3>
+        <p><span class="risk SLGT">600–1200 CAPE</span> <span class="risk SLGT">100–180 SRH</span></p>
+        <p>Einzelne Gewitter möglich, meist schwach organisiert.</p>
+    </div>
+
+    <div class="info-card">
+        <h3><span class="risk ENH">ENH</span> Enhanced Risk</h3>
+        <p><span class="risk ENH">1200–2000 CAPE</span> <span class="risk ENH">150–250 SRH</span></p>
+        <p>Organisierte Gewitter möglich, Hagel & starke Böen.</p>
+    </div>
+
+    <div class="info-card">
+        <h3><span class="risk MDT">MDT</span> Moderate Risk</h3>
+        <p><span class="risk MDT">2000–3000 CAPE</span> <span class="risk MDT">200–300 SRH</span></p>
+        <p>Starke Gewitterlagen, Superzellen möglich.</p>
+    </div>
+
+    <div class="info-card">
+        <h3><span class="risk HIGH">HIGH</span> High Risk</h3>
+        <p><span class="risk HIGH">3000+ CAPE</span> <span class="risk HIGH">250+ SRH</span></p>
+        <p>Extreme Bedingungen mit möglichem Tornadorisiko.</p>
+    </div>
+
+    <br>
+    <br>
+    <br>
+
+    <div class="info-card disclaimer">
+    <h3>ℹ️ Hinweis</h3>
+    <p>
+        Diese Seite ist kein offizielles Warnsystem.  
+        Die dargestellten Werte (CAPE, SRH, Risiko-Stufen) dienen nur zur
+        visuellen Einordnung und ersetzen keine offiziellen Wetterwarnungen.
+    </p>
+</div>
+
+</div>
+
+<footer class="footer">
+    © 2026 SevereWX – All rights reserved.
+</footer>
+
+</body>
+</html>
