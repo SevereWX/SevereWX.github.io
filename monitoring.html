@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SevereWX</title>
+    <link rel="stylesheet" href="monitoringstyle.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">SevereWX</div>
+
+    <div class="links">
+        <a href="index.html">Home</a>
+        <a href="monitoring.html">Monitoring</a>
+        <a href="#">Über uns</a>
+        <a href="#">Storm Info</a>
+        <a href="kontakt.html">Kontakt</a>
+    </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="monitor-box">
+
+    <h3>🌍 SevereWX Monitoring</h3>
+
+    <div class="country">
+        <h4>United States</h4>
+        <div class="location">📍 Kansas – erhöhte Gewitteraktivität</div>
+        <div class="location">📍 Oklahoma – mögliche Superzellen-Entwicklung</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="country">
+        <h4>Germany</h4>
+        <div class="location">📍 Nordrhein-Westfalen – stabile Wetterlage</div>
+        <div class="location">📍 Niedersachsen – leichte Schauer möglich</div>
+    </div>
+
+    <div class="status">
+    <span class="dot"></span>
+    Status: Live Monitoring aktiv • <span id="updateTime"></span>
+</div>
+
+<script>
+async function loadNWS() {
+
+    try {
+        // Kansas + Oklahoma Forecast Zones (NWS)
+        const urls = [
+            "https://api.weather.gov/alerts/active?area=KS",
+            "https://api.weather.gov/alerts/active?area=OK"
+        ];
+
+        let output = "";
+
+        for (let url of urls) {
+            let res = await fetch(url);
+            let data = await res.json();
+
+            let state = url.includes("KS") ? "Kansas" : "Oklahoma";
+
+            if (data.features.length === 0) {
+                output += `<div class="location">📍 ${state}: Keine aktiven Warnungen</div>`;
+            } else {
+                data.features.forEach(alert => {
+                    output += `<div class="location">⚠️ ${state}: ${alert.properties.event}</div>`;
+                });
+            }
+        }
+
+        document.getElementById("us-data").innerHTML = output;
+
+        // Update Zeit
+        document.getElementById("updateTime").textContent =
+            new Date().toLocaleTimeString();
+
+    } catch (err) {
+        document.getElementById("us-data").innerHTML =
+            "Fehler beim Laden der NWS Daten";
+        console.log(err);
+    }
+}
+
+// initial + auto refresh
+loadNWS();
+setInterval(loadNWS, 300000); // alle 5 Minuten
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>
