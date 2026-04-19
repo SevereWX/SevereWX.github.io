@@ -1,0 +1,140 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #e8eeff;
+    background: linear-gradient(135deg, #050814, #0b1a33, #071022);
+    min-height: 100vh;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 15px 30px;
+    background: rgba(10, 18, 40, 0.7);
+    backdrop-filter: blur(6px);
+
+    border-bottom: 1px solid rgba(120, 160, 255, 0.15);
+}
+
+.logo {
+    font-weight: bold;
+    color: #9db7ff;
+    font-size: 18px;
+}
+
+.links a {
+    color: #cfd8ff;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 14px;
+}
+
+.links a:hover {
+    color: #ffffff;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #e8eeff;
+    background: linear-gradient(135deg, #050814, #0b1a33, #071022);
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 15px 30px;
+    background: rgba(10, 18, 40, 0.7);
+    backdrop-filter: blur(6px);
+
+    border-bottom: 1px solid rgba(120, 160, 255, 0.15);
+}
+
+.logo {
+    font-weight: bold;
+    color: #9db7ff;
+    font-size: 18px;
+}
+
+.links a {
+    color: #cfd8ff;
+    text-decoration: none;
+    margin-left: 18px;
+    font-size: 14px;
+}
+
+/* SECTION BOX */
+.section {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.08); /* ← dein „Strich“ ist zurück */
+}
+
+.title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #9db7ff;
+    margin-bottom: 10px;
+}
+
+/* CARD */
+.card {
+    padding: 12px;
+    margin: 10px 0;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+}
+
+.name {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.data {
+    font-size: 14px;
+    color: #cfd8ff;
+}
+
+/* RISK */
+.risk {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    margin-left: 6px;
+}
+
+.MRGL { background:#2bff7a33; color:#2bff7a; }
+.SLGT { background:#ffe60033; color:#ffe600; }
+.ENH  { background:#ff9d0033; color:#ff9d00; }
+.MDT  { background:#ff4d0033; color:#ff4d00; }
+.HIGH { background:#ff003333; color:#ff0033; }
+
+.status-online {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #2bff7a;
+}
+
+.status-offline {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #ff3b3b;
+}
+
+/* MAP */
+#map {
+    height: 450px;
+    margin-top: 30px;
+    border-radius: 12px;
+}
+
+.monitor-box {
+    margin: 40px auto;
+    padding: 25px;
+}
